@@ -57,7 +57,14 @@ fi
 
 # load libs from Nix file
 mkdir -p .nix/fix-python
-nix build --impure --file "$LIBS_PATH" -o .nix/fix-python/result
+nix_libs_build_status=$(nix build --impure --expr "import $LIBS_PATH" -o .nix/fix-python/result; echo $?)
+if [ "$nix_libs_build_status" -eq "1" ]; then
+  echo "Failed to load libs from Nix file $LIBS_PATH"
+  echo ""
+  echo "Try to debug this issue with the command:"
+  echo "    nix build --impure --expr \"import $LIBS_PATH\""
+  exit 1
+fi
 nixos_python_nix_libs="$(nix eval --impure --expr "let pkgs = import (builtins.getFlake \"nixpkgs\") {}; in pkgs.lib.strings.makeLibraryPath (import $LIBS_PATH)" | sed 's/^"\(.*\)"$/\1/')"
 if [ "$verbose" ]; then echo "nixos_python_nix_libs=$nixos_python_nix_libs"; fi
 libs="$nixos_python_nix_libs"
