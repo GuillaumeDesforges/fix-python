@@ -5,6 +5,25 @@ Work with Python "normally" on NixOS in one command!
 Tired of all these "*.so not found" errors?
 Change the RPATH of all the binaries in your venv!
 
+## Requirements
+
+- Nix
+- `nix-command` and `flakes` experimental features must be enabled
+
+## Install
+
+Use temporarly in a shell
+
+```
+nix shell github:GuillaumeDesforges/fix-python
+```
+
+Or add it to your profile
+
+```
+nix profile install github:GuillaumeDesforges/fix-python
+```
+
 ## Usage
 
 In your Python project, create a virtual environment `.venv` and use your preferred tool (pip, poetry, ...) to install your dependencies.
