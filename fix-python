@@ -55,6 +55,24 @@ if [ -z "$LIBS_PATH" ]; then
   exit 1
 fi
 
+# check runtime dependencies are installed
+if ! command -v file &> /dev/null
+then
+  echo "The command \"file\" can't be found in PATH."
+  echo "You can run fix-python in a shell with \"file\" using:"
+  echo ""
+  echo "    nix shell nixpkgs#file"
+  exit 1
+fi
+if ! command -v patchelf &> /dev/null
+then
+  echo "The command \"patchelf\" can't be found in PATH."
+  echo "You can run fix-python in a shell with \"patchelf\" using:"
+  echo ""
+  echo "    nix shell nixpkgs#patchelf"
+  exit 1
+fi
+
 # load libs from Nix file
 mkdir -p .nix/fix-python
 nix_libs_build_status=$(nix build --impure --expr "import $LIBS_PATH" -o .nix/fix-python/result; echo $?)
