@@ -58,19 +58,15 @@ fi
 # check runtime dependencies are installed
 if ! command -v file &> /dev/null
 then
-  echo "The command \"file\" can't be found in PATH."
-  echo "You can run fix-python in a shell with \"file\" using:"
-  echo ""
-  echo "    nix shell nixpkgs#file"
-  exit 1
+  echo "Automatically adding \"file\" to PATH."
+  dep_file_path="$(nix build --no-link --print-out-paths nixpkgs#file)/bin"
+  export PATH="$dep_file_path:$PATH"
 fi
 if ! command -v patchelf &> /dev/null
 then
-  echo "The command \"patchelf\" can't be found in PATH."
-  echo "You can run fix-python in a shell with \"patchelf\" using:"
-  echo ""
-  echo "    nix shell nixpkgs#patchelf"
-  exit 1
+  echo "Automatically adding \"patchelf\" to PATH."
+  dep_patchelf_path="$(nix build --no-link --print-out-paths nixpkgs#patchelf)/bin"
+  export PATH="$dep_patchelf_path:$PATH"
 fi
 
 # load libs from Nix file
