@@ -15,6 +15,9 @@ if [ "$1" = "--help" ]; then
   exit 0
 fi
 
+verbose=0
+enable_gpu=0
+
 # arguments
 while [ $# -gt 0 ]; do
   case "$1" in
