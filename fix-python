@@ -59,14 +59,16 @@ fi
 if ! command -v file &> /dev/null
 then
   echo "Automatically adding \"file\" to PATH."
-  dep_file_path="$(nix build --no-link --print-out-paths nixpkgs#file)/bin"
+  dep_file_path="$(nix build --no-link --print-out-paths nixpkgs#file.out)/bin"
   export PATH="$dep_file_path:$PATH"
+  if [ "$verbose" ]; then echo "dep_file_path=$dep_file_path"; fi
 fi
 if ! command -v patchelf &> /dev/null
 then
   echo "Automatically adding \"patchelf\" to PATH."
   dep_patchelf_path="$(nix build --no-link --print-out-paths nixpkgs#patchelf)/bin"
   export PATH="$dep_patchelf_path:$PATH"
+  if [ "$verbose" ]; then echo "dep_patchelf_path=$dep_patchelf_path"; fi
 fi
 
 # load libs from Nix file
