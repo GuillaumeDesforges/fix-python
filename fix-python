@@ -58,20 +58,6 @@ if [ -z "$LIBS_PATH" ]; then
   exit 1
 fi
 
-# check runtime dependencies are installed
-if ! command -v file &> /dev/null
-then
-  echo "Automatically adding \"file\" to PATH."
-  dep_file_path="$(nix build --no-link --print-out-paths nixpkgs#file)/bin"
-  export PATH="$dep_file_path:$PATH"
-fi
-if ! command -v patchelf &> /dev/null
-then
-  echo "Automatically adding \"patchelf\" to PATH."
-  dep_patchelf_path="$(nix build --no-link --print-out-paths nixpkgs#patchelf)/bin"
-  export PATH="$dep_patchelf_path:$PATH"
-fi
-
 # load libs from Nix file
 mkdir -p .nix/fix-python
 nix_libs_build_status=$(nix build --impure --expr "import $LIBS_PATH" -o .nix/fix-python/result; echo $?)
