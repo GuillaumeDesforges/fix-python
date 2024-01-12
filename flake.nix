@@ -6,14 +6,10 @@
       in
         {
           packages.default =
-            pkgs.stdenv.mkDerivation {
-              name = "fix-python";
-              src = ./.;
-              phases = [ "unpackPhase" "installPhase" ];
-              installPhase = ''
-                mkdir -p $out/bin
-                cp $src/fix-python $out/bin
-              '';
+            pkgs.writeShellApplication {
+                name = "fix-python";
+                runtimeInputs = [pkgs.file pkgs.patchelf];
+                text = builtins.readFile ./fix-python;
             };
         }
     );
