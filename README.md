@@ -28,10 +28,7 @@ nix profile install github:GuillaumeDesforges/fix-python
 
 In your Python project, create a virtual environment `.venv` and use your preferred tool (pip, poetry, ...) to install your dependencies.
 
-Then create a `.nix/libs.nix` file that returns the array of packages that you want binaries to be linked with.
-
-> Note: you may add this `.nix` folder to your project `.gitignore`.
-
+By default, `fix-python` patches the packages given in the following expression:
 ```nix
 let pkgs = import (builtins.getFlake "nixpkgs") { };
 in [
@@ -43,10 +40,14 @@ in [
 
 > Note: these three packages are fundamental for most Python packages and should never me removed.
 
+If you need to patch packages in addition to these, create a `.nix/libs.nix` file with a structure similar to the above that returns the array of packages that you want binaries to be linked with.
+
+> Note: you may add this `.nix` folder to your project `.gitignore`.
+
 Finally, call `fix-python`.
 
 ```console
-fix-python --venv .venv --libs .nix/libs.nix
+fix-python --venv .venv [--libs .nix/libs.nix]
 ```
 
 See the list of options with
