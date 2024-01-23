@@ -3,7 +3,7 @@ set -e
 
 # This script fix issues with Python binaries on NixOS
 # Usage:
-# fix-python --venv .venv [--libs libs.nix]
+# fix-python --venv .venv [--libs libs.nix] [--no-default-libs]
 
 DEFAULT_LIBS_EXPRESSION="
 (
@@ -18,9 +18,10 @@ DEFAULT_LIBS_EXPRESSION="
 
 # Help
 if [ "$1" = "--help" ]; then
-  echo "Usage: fix-python --venv .venv [--libs libs.nix]"
+  echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]"
   echo "--venv: path to Python virtual environment"
   echo "--libs: path to a Nix file which returns a list of derivations"
+  echo "--no-default-libs: don't patch C++ standard libraries, glibc, and zlib by default"
   echo "--gpu: enable GPU support"
   echo "--verbose: increase verbosity"
   exit 0
@@ -37,6 +38,10 @@ while [ $# -gt 0 ]; do
       shift
       LIBS_PATH="$1"
       ;;
+    --no-default-libs)
+      shift
+      DEFAULT_LIBS_EXPRESSION="[]"
+      ;;
     --gpu)
       enable_gpu="1"
       ;;
@@ -45,7 +50,7 @@ while [ $# -gt 0 ]; do
       ;;
     *)
       echo "Unknown argument: $1"
-      echo "Usage: fix-python --venv .venv [--libs libs.nix]"
+      echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]"
       exit 1
       ;;
   esac
@@ -55,7 +60,7 @@ done
 # check arguments
 if [ -z "$VENV_PATH" ]; then
   echo "Missing argument: --venv"
-  echo "Usage: fix-python --venv .venv [--libs libs.nix]"
+  echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]"
   echo "or set VENV_PATH"
   exit 1
 fi
