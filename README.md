@@ -50,8 +50,15 @@ Finally, call `fix-python`.
 fix-python --venv .venv [--libs .nix/libs.nix]
 ```
 
-See the list of options with
+The list of options is:
 
 ```
-fix-python --help
+$ ./fix-python --help
+Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]
+--help: show this help message
+--venv: path to Python virtual environment
+--libs: path to a Nix file which returns a list of derivations
+--no-default-libs: don't patch C++ standard libraries, glibc, and zlib by default
+--gpu: enable GPU support
+--verbose: increase verbosity
 ```

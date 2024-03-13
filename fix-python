@@ -19,6 +19,7 @@ DEFAULT_LIBS_EXPRESSION="
 # Help
 if [ "$1" = "--help" ]; then
   echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]"
+  echo "--help: show this help message"
   echo "--venv: path to Python virtual environment"
   echo "--libs: path to a Nix file which returns a list of derivations"
   echo "--no-default-libs: don't patch C++ standard libraries, glibc, and zlib by default"
