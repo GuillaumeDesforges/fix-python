@@ -60,5 +60,6 @@ Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]
 --libs: path to a Nix file which returns a list of derivations
 --no-default-libs: don't patch C++ standard libraries, glibc, and zlib by default
 --gpu: enable GPU support
+--with-torch: fix pytorch dependencies issues
 --verbose: increase verbosity
 ```

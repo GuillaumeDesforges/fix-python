@@ -24,6 +24,7 @@ if [ "$1" = "--help" ]; then
   echo "--libs: path to a Nix file which returns a list of derivations"
   echo "--no-default-libs: don't patch C++ standard libraries, glibc, and zlib by default"
   echo "--gpu: enable GPU support"
+  echo "--with-torch: fix pytorch dependencies issues"
   echo "--verbose: increase verbosity"
   exit 0
 fi
@@ -45,6 +46,9 @@ while [ $# -gt 0 ]; do
       ;;
     --gpu)
       enable_gpu="1"
+      ;;
+    --with-torch)
+      enable_torch="1"
       ;;
     --verbose)
       verbose="1"
@@ -141,7 +145,18 @@ cat <<< "$binary_files" \
         interpreter_name="$(basename "$old_interpreter")"
         new_interpreter="$(echo "$new_rpath" | tr ':' '\n' | xargs -I {} find {} -name "$interpreter_name" | head -1)"
         patchelf --set-interpreter "$new_interpreter" "$file" || true
-      fi 
+      fi
       echo
     done
 
+# `libtorch_global_deps.so` depends on libstdc++ but does not properly declare it, fix it manually see
+# https://github.com/eth-sri/lmql/blob/main/scripts/flake.d/overrides.nix#L28-L40
+if [ "$enable_torch" ]; then
+    torch_files=$(find "$(realpath "$VENV_PATH")" -name libtorch_global_deps.so)
+    cat <<< "$torch_files" \
+      | while read -r file
+        do
+          echo "Patching torch file: $file"
+          patchelf $file --add-needed libstdc++.so
+        done
+fi
