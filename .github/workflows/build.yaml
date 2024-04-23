@@ -1,0 +1,35 @@
+name: Check
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - action
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  check-numpy-import:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Nix
+        uses: cachix/install-nix-action@v22
+
+      - name: Install Python 3.11 with Nix
+        run: nix --extra-experimental-features nix-command --extra-experimental-features flakes run nixpkgs#python311 -- -m venv .venv --copies
+
+      - name: Install numpy
+        run: .venv/bin/pip install numpy
+
+      - name: Fix numpy import issue
+        run: ./fix-python --venv .venv
+
+      - name: Check numpy import after fix
+        run: .venv/bin/python -c 'import numpy'
