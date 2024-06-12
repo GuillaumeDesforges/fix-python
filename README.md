@@ -12,7 +12,7 @@ Change the RPATH of all the binaries in your venv!
 
 ## Install
 
-Use temporarly in a shell
+Use temporarily in a shell
 
 ```
 nix shell github:GuillaumeDesforges/fix-python
