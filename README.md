@@ -38,7 +38,7 @@ in [
 ]
 ```
 
-> Note: these three packages are fundamental for most Python packages and should never me removed.
+> Note: these three packages are fundamental for most Python packages and should never be removed.
 
 If you need to patch packages in addition to these, create a `.nix/libs.nix` file with a structure similar to the above that returns the array of packages that you want binaries to be linked with.
 
