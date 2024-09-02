@@ -89,6 +89,14 @@ fi
 # load libs from Nix file
 if [ "$LIBS_PATH" ];
 then
+  # if $LIBS_PATH is just a file in the current working directory,
+  # specified without leading "./", we add "./" so that $LIBS_PATH
+  # can be interpreted directly as a Nix path in the following
+  # expression
+  if [[ ! "$LIBS_PATH" == *"/"* ]];
+  then
+    LIBS_PATH="./$LIBS_PATH"
+  fi
   custom_libs_expression="(import $LIBS_PATH)"
   mkdir -p .nix/fix-python
   nix_libs_build_status=$(
