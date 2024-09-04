@@ -28,6 +28,14 @@ nix profile install github:GuillaumeDesforges/fix-python
 
 In your Python project, create a virtual environment `.venv` and use your preferred tool (pip, poetry, ...) to install your dependencies.
 
+> [!IMPORTANT]
+> `fix-python` will patch binary files in the virtual environment _without_ following symlinks.
+> 
+> For example, if you use the `venv` module from Python's standard library, please make sure you pass `--copies` when creating the environment.
+> ```bash
+> python -m venv .venv --copies
+> ```
+
 By default, `fix-python` patches the packages given in the following expression:
 ```nix
 let pkgs = import (builtins.getFlake "nixpkgs") { };
