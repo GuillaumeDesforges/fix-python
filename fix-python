@@ -149,7 +149,9 @@ fi
 
 # patch each binary file found in the virtual environment
 # shellcheck disable=SC2156
-binary_files=$(find "$(realpath "$VENV_PATH")" -type f -executable -exec sh -c "file -i '{}' | grep -qE 'x-(.*); charset=binary'" \; -print)
+echo "Searching for files to patch in $VENV_PATH" >&2
+# NOTE: used to be faster, but `find -executable` is excluding too many files, see #19
+binary_files=$(find "$(realpath "$VENV_PATH")" -type f -exec sh -c "file -i '{}' | grep -qE 'application/x-(executable|sharedlib); charset=binary'" \; -print)
 n_binary_files=$(wc -l <<< "$binary_files")
 echo "Found $n_binary_files binary files" >&2
 cat <<< "$binary_files" \
