@@ -18,14 +18,14 @@ DEFAULT_LIBS_EXPRESSION="
 
 # Help
 if [ "$1" = "--help" ]; then
-  echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]"
-  echo "--help: show this help message"
-  echo "--venv: path to Python virtual environment"
-  echo "--libs: path to a Nix file which returns a list of derivations"
-  echo "--no-default-libs: don't patch C++ standard libraries, glibc, and zlib by default"
-  echo "--gpu: enable GPU support"
-  echo "--with-torch: fix pytorch dependencies issues"
-  echo "--verbose: increase verbosity"
+  echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]" >&2
+  echo "--help: show this help message" >&2
+  echo "--venv: path to Python virtual environment" >&2
+  echo "--libs: path to a Nix file which returns a list of derivations" >&2
+  echo "--no-default-libs: don't patch C++ standard libraries, glibc, and zlib by default" >&2
+  echo "--gpu: enable GPU support" >&2
+  echo "--with-torch: fix pytorch dependencies issues" >&2
+  echo "--verbose: increase verbosity" >&2
   exit 0
 fi
 
@@ -54,8 +54,8 @@ while [ $# -gt 0 ]; do
       verbose="1"
       ;;
     *)
-      echo "Unknown argument: $1"
-      echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]"
+      echo "Unknown argument: $1" >&2
+      echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]" >&2
       exit 1
       ;;
   esac
@@ -64,26 +64,30 @@ done
 
 # check arguments
 if [ -z "$VENV_PATH" ]; then
-  echo "Missing argument: --venv"
-  echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]"
-  echo "or set VENV_PATH"
+  echo "Missing argument: --venv" >&2
+  echo "Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]" >&2
+  echo "or set VENV_PATH" >&2
   exit 1
 fi
 
 # check runtime dependencies are installed
 if ! command -v file &> /dev/null
 then
-  echo "Automatically adding \"file\" to PATH."
+  echo "Automatically adding \"file\" to PATH." >&2
   dep_file_path="$(nix build --no-link --print-out-paths nixpkgs#file.out)/bin"
   export PATH="$dep_file_path:$PATH"
-  if [ "$verbose" ]; then echo "dep_file_path=$dep_file_path"; fi
+  if [ "$verbose" ]; then 
+    echo "dep_file_path=$dep_file_path" >&2
+  fi
 fi
 if ! command -v patchelf &> /dev/null
 then
-  echo "Automatically adding \"patchelf\" to PATH."
+  echo "Automatically adding \"patchelf\" to PATH." >&2
   dep_patchelf_path="$(nix build --no-link --print-out-paths nixpkgs#patchelf)/bin"
   export PATH="$dep_patchelf_path:$PATH"
-  if [ "$verbose" ]; then echo "dep_patchelf_path=$dep_patchelf_path"; fi
+  if [ "$verbose" ]; then 
+    echo "dep_patchelf_path=$dep_patchelf_path" >&2
+  fi
 fi
 
 # load libs from Nix file
@@ -105,10 +109,10 @@ then
   )
   if [ "$nix_libs_build_status" -eq "1" ];
   then
-    echo "Failed to load libs from Nix file $LIBS_PATH"
-    echo ""
-    echo "Try to debug this issue with the command:"
-    echo "    nix build --impure --expr \"import $LIBS_PATH\""
+    echo "Failed to load libs from Nix file $LIBS_PATH" >&2
+    echo "" >&2
+    echo "Try to debug this issue with the command:" >&2
+    echo "    nix build --impure --expr \"import $LIBS_PATH\"" >&2
     exit 1
   fi
 else
@@ -116,34 +120,42 @@ else
 fi
 all_nix_libs_expression="($custom_libs_expression ++ $DEFAULT_LIBS_EXPRESSION)"
 nixos_python_nix_libs="$(nix eval --impure --expr "let pkgs = import (builtins.getFlake \"nixpkgs\") {}; in pkgs.lib.strings.makeLibraryPath $all_nix_libs_expression" | sed 's/^"\(.*\)"$/\1/')"
-if [ "$verbose" ]; then echo "nixos_python_nix_libs=$nixos_python_nix_libs"; fi
+if [ "$verbose" ]; then 
+  echo "nixos_python_nix_libs=$nixos_python_nix_libs" >&2
+fi
 libs="$nixos_python_nix_libs"
 
 # load libs from virtual environment
 python_venv_libs=$(echo "$(find "$(realpath "$VENV_PATH")" -name '*.libs'):$(find "$(realpath "$VENV_PATH")" -name 'lib')" | tr '\n' ':')
-if [ "$verbose" ]; then echo "nixos_python_venv_libs=$python_venv_libs"; fi
+if [ "$verbose" ]; then 
+  echo "nixos_python_venv_libs=$python_venv_libs" >&2
+fi
 libs="$libs:$python_venv_libs"
 
 # load libs from NixOS for GPU support if requested
 if [ "$enable_gpu" ]; then
   nixos_gpu_libs="$(readlink /run/opengl-driver)/lib"
-  if [ "$verbose" ]; then echo "nixos_gpu_libs=$nixos_gpu_libs"; fi
+  if [ "$verbose" ]; then 
+    echo "nixos_gpu_libs=$nixos_gpu_libs" >&2
+  fi
   libs="$libs:$nixos_gpu_libs"
 fi
 
 # put it all together
 libs=$(echo "$libs" | sed 's/:\+/:/g' | sed 's/^://' | sed 's/:$//')
-if [ "$verbose" ]; then echo "libs=$libs"; fi
+if [ "$verbose" ]; then 
+  echo "libs=$libs" >&2
+fi
 
 # patch each binary file found in the virtual environment
 # shellcheck disable=SC2156
 binary_files=$(find "$(realpath "$VENV_PATH")" -type f -executable -exec sh -c "file -i '{}' | grep -qE 'x-(.*); charset=binary'" \; -print)
 n_binary_files=$(wc -l <<< "$binary_files")
-echo "Found $n_binary_files binary files"
+echo "Found $n_binary_files binary files" >&2
 cat <<< "$binary_files" \
   | while read -r file
     do
-      echo "Patching file: $file"
+      echo "Patching file: $file" >&2
       old_rpath="$(patchelf --print-rpath "$file" || true)"
       # prevent duplicates
       new_rpath="$(echo "$libs:$old_rpath"  | sed 's/:$//' | tr ':' '\n' | sort --unique | tr '\n' ':' | sed 's/^://' | sed 's/:$/\n/')"
@@ -154,7 +166,7 @@ cat <<< "$binary_files" \
         new_interpreter="$(echo "$new_rpath" | tr ':' '\n' | xargs -I {} find {} -name "$interpreter_name" | head -1)"
         patchelf --set-interpreter "$new_interpreter" "$file" || true
       fi
-      echo
+      echo >&2
     done
 
 # `libtorch_global_deps.so` depends on libstdc++ but does not properly declare it, fix it manually see
@@ -164,7 +176,7 @@ if [ "$enable_torch" ]; then
     cat <<< "$torch_files" \
       | while read -r file
         do
-          echo "Patching torch file: $file"
+          echo "Patching torch file: $file" >&2
           patchelf $file --add-needed libstdc++.so
         done
 fi
