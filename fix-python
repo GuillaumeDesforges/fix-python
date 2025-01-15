@@ -25,6 +25,7 @@ if [ "$1" = "--help" ]; then
   echo "--no-default-libs: don't patch C++ standard libraries, glibc, and zlib by default" >&2
   echo "--gpu: enable GPU support" >&2
   echo "--with-torch: fix pytorch dependencies issues" >&2
+  echo "--deep: looks for anything executable to patch, very slow but needed sometimes (e.g. PyQt)" >&2
   echo "--verbose: increase verbosity" >&2
   exit 0
 fi
@@ -49,6 +50,9 @@ while [ $# -gt 0 ]; do
       ;;
     --with-torch)
       enable_torch="1"
+      ;;
+    --deep)
+      deep="1"
       ;;
     --verbose)
       verbose="1"
@@ -150,10 +154,17 @@ fi
 # patch each binary file found in the virtual environment
 # shellcheck disable=SC2156
 echo "Searching for files to patch in $VENV_PATH" >&2
-# NOTE: used to be faster, but `find -executable` is excluding too many files, see #19
-binary_files=$(find "$(realpath "$VENV_PATH")" -type f -exec sh -c "file -i '{}' | grep -qE 'application/x-(executable|sharedlib); charset=binary'" \; -print)
+if [ "$deep" ]; then
+  echo "Deep search for binary files" >&2
+  # For context, see #19
+  binary_files=$(find "$(realpath "$VENV_PATH")" -type f -exec sh -c "file -i '{}' | grep -qE 'application/x-(executable|sharedlib); charset=binary'" \; -print)
+else
+  echo "Fast search for binary files" >&2
+  binary_files=$(find "$(realpath "$VENV_PATH")" -type f -executable -exec sh -c "file -i '{}' | grep -qE 'x-(.*); charset=binary'" \; -print)
+fi
 n_binary_files=$(wc -l <<< "$binary_files")
 echo "Found $n_binary_files binary files" >&2
+
 cat <<< "$binary_files" \
   | while read -r file
     do

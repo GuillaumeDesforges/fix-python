@@ -69,5 +69,6 @@ Usage: fix-python --venv .venv [--libs libs.nix] [--no-default-libs]
 --no-default-libs: don't patch C++ standard libraries, glibc, and zlib by default
 --gpu: enable GPU support
 --with-torch: fix pytorch dependencies issues
+--deep: looks for anything executable to patch, very slow but needed sometimes (e.g. PyQt)
 --verbose: increase verbosity
 ```
