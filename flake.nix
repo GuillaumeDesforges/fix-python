@@ -1,5 +1,5 @@
 {
-  outputs = { flake-utils, nixpkgs, ...}:
+  outputs = { self, flake-utils, nixpkgs, ...}:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -8,7 +8,7 @@
           packages.default =
             pkgs.stdenv.mkDerivation {
               name = "fix-python";
-              src = ./.;
+              src = self;
               phases = [ "unpackPhase" "installPhase" ];
               installPhase = ''
                 mkdir -p $out/bin
